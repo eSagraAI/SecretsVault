@@ -163,6 +163,7 @@ Read `docs/threat-model.md` before storing real secrets. The limits, without sof
 - [`docs/user-uninstall.md`](docs/user-uninstall.md) — clean removal.
 - [`SECURITY.md`](SECURITY.md) — how to report a vulnerability. **Do not publish live credentials, vault files, tokens, or full audit logs in public issues.**
 - [`CHANGELOG.md`](CHANGELOG.md) — release notes.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — branch model, local gate, release checklist and commit style.
 
 ## License
 

@@ -2,6 +2,11 @@
 
 This is the first public release of SecretsVault. No independent security audit has been performed.
 
+## [Unreleased]
+
+Changes for the next version land here while it is in development. The section is
+closed with a version number and date during release preparation.
+
 ## 0.1.0 — 2026-09-19
 
 ### Added
