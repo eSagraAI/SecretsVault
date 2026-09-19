@@ -1,0 +1,37 @@
+fn main() {
+    tauri_build::try_build(tauri_build::Attributes::new().app_manifest(
+        tauri_build::AppManifest::new().commands(&[
+            "get_status",
+            "pin_status",
+            "probe_fingerprint",
+            "unlock",
+            "lock",
+            "health",
+            "overview_refresh",
+            "projects_list",
+            "project_add",
+            "project_remove",
+            "project_path_add",
+            "project_path_remove",
+            "secrets_list",
+            "secret_set",
+            "secret_delete",
+            "agents_list",
+            "agent_add",
+            "agent_revoke",
+            "grants_list",
+            "grant_set",
+            "grant_revoke",
+            "approvals_pending",
+            "approval_approve",
+            "approval_deny",
+            "reveal",
+            "leases_list",
+            "lease_revoke",
+            "runs_list",
+            "audit_show",
+            "audit_verify",
+        ]),
+    ))
+    .expect("failed to run tauri-build");
+}

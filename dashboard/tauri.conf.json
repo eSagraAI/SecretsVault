@@ -1,0 +1,41 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "SecretsVault",
+  "version": "0.1.0",
+  "identifier": "pro.zeryn.svault.dashboard",
+  "build": {
+    "frontendDist": "./ui/dist",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build && cargo build --release --manifest-path ../Cargo.toml"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src ipc: http://ipc.localhost; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'",
+      "devCsp": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src ipc: http://ipc.localhost; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'",
+      "freezePrototype": true,
+      "pattern": { "use": "brownfield" }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["deb"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png"
+    ],
+    "category": "Utility",
+    "shortDescription": "Local-first secrets and permissions broker for AI agents",
+    "longDescription": "Read and manage a local SecretsVault broker: projects, secret metadata, agents, grants, approvals, leases, runs, and the tamper-evident audit log. The vault passphrase is entered only to unlock; trust is established from the command line.",
+    "linux": {
+      "deb": {
+        "files": {
+          "/usr/bin/svault": "../target/release/svault",
+          "usr/share/doc/secrets-vault/copyright": "../LICENSE"
+        }
+      }
+    }
+  }
+}

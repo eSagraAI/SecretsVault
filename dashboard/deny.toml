@@ -1,0 +1,125 @@
+# Supply-chain gate for the DASHBOARD crate's own dependency closure.
+#
+# Why this file exists: the root `Cargo.toml` excludes `dashboard/` from the
+# core workspace on purpose, so `cargo-deny` at the repo root never sees the
+# Tauri closure. That kept the security core's audit clean (a documented
+# decision), but it also meant the closure that actually SHIPS in the Linux
+# bundle was gated by nothing at all.
+#
+# D7 enables the bundle, so the closure now ships: this file gates it. It is
+# NOT a relaxation of the root policy. The root `deny.toml` stays exactly as
+# strict as it was for the core; this one applies only under `dashboard/` and
+# every exception below is explicit, scoped to a named advisory, and carries
+# the reason it is accepted. Re-check each exception when the Tauri major
+# version changes (tauri 2.x / gtk 0.18 line).
+#
+# Run from `dashboard/`:
+#   cargo deny check
+
+[advisories]
+version = 2
+yanked = "deny"
+unmaintained = "all"
+unsound = "all"
+
+# Accepted advisories (7): each entry below documents, for one advisory, the
+# affected crate, the advisory id, the real dependency path that introduces
+# it, why it is not exploitable in SecretsVault, why no reasonable upgrade
+# exists, and the future-review condition. Re-check every entry when the
+# Tauri major version changes (tauri 2.x / gtk 0.18 line) or when
+# `cargo deny check advisories` reports a safe upgrade.
+ignore = [
+  # Crate: `proc-macro-error` 1.0.4. Advisory: RUSTSEC-2024-0370
+  # (informational: unmaintained). Introduced via
+  # `svault-dashboard -> tauri -> wry -> webkit2gtk -> gtk -> glib ->
+  # glib-macros -> proc-macro-error` (also via `gtk3-macros`). Build-time
+  # only: proc-macro expansion during compilation, absent from the shipped
+  # runtime and never on the vault request path. No safe upgrade exists
+  # inside the tauri 2.x line (cargo-deny reports "No safe upgrade is
+  # available!"); fixing it requires upstream gtk-rs to migrate off this
+  # helper. Review when the Tauri major version changes or a patched
+  # glib-macros/glib line lands.
+  "RUSTSEC-2024-0370",
+  # Crate: `unic-char-range` 0.9.0. Advisory: RUSTSEC-2025-0075
+  # (informational: unmaintained, rust-unic family). Introduced via
+  # `svault-dashboard -> tauri -> tauri-utils -> urlpattern ->
+  # unic-ucd-ident -> unic-char-property -> unic-char-range` (also directly
+  # via `unic-ucd-ident`). Static Unicode range tables used for URL-pattern
+  # matching in webview URL handling, not for any SecretsVault security
+  # decision. No safe upgrade exists (the whole rust-unic family is
+  # unmaintained with no patched release). Review when tauri-utils drops
+  # the unic-* dependency or a maintained fork is adopted upstream.
+  "RUSTSEC-2025-0075",
+  # Crate: `unic-common` 0.9.0. Advisory: RUSTSEC-2025-0080
+  # (informational: unmaintained, rust-unic family). Introduced via
+  # `svault-dashboard -> tauri -> tauri-utils -> urlpattern ->
+  # unic-ucd-ident -> unic-ucd-version -> unic-common`. Marker-trait helper
+  # for the Unicode tables above; same non-security use, no patched
+  # release. Review when tauri-utils drops the unic-* dependency.
+  "RUSTSEC-2025-0080",
+  # Crate: `unic-char-property` 0.9.0. Advisory: RUSTSEC-2025-0081
+  # (informational: unmaintained, rust-unic family). Introduced via
+  # `svault-dashboard -> tauri -> tauri-utils -> urlpattern ->
+  # unic-ucd-ident -> unic-char-property`. Static character-property tables
+  # for URL-pattern matching, not for any SecretsVault security decision.
+  # No patched release exists. Review when tauri-utils drops the unic-*
+  # dependency.
+  "RUSTSEC-2025-0081",
+  # Crate: `unic-ucd-version` 0.9.0. Advisory: RUSTSEC-2025-0098
+  # (informational: unmaintained, rust-unic family). Introduced via
+  # `svault-dashboard -> tauri -> tauri-utils -> urlpattern ->
+  # unic-ucd-ident -> unic-ucd-version`. Unicode-version constant for the
+  # tables above; same non-security use, no patched release. Review when
+  # tauri-utils drops the unic-* dependency.
+  "RUSTSEC-2025-0098",
+  # Crate: `unic-ucd-ident` 0.9.0. Advisory: RUSTSEC-2025-0100
+  # (informational: unmaintained, rust-unic family). Introduced via
+  # `svault-dashboard -> tauri -> tauri-utils -> urlpattern ->
+  # unic-ucd-ident`. Unicode identifier tables for URL-pattern matching,
+  # not for any SecretsVault security decision. No patched release exists.
+  # Review when tauri-utils drops the unic-* dependency.
+  "RUSTSEC-2025-0100",
+  # Crate: `glib` 0.18.5. Advisory: RUSTSEC-2024-0429 (informational:
+  # unsound; GHSA-wrw7-89jp-8q8g). Introduced via `svault-dashboard ->
+  # tauri -> wry -> webkit2gtk -> gtk -> glib` (pinned by the gtk 0.18
+  # line that tauri 2.x requires). The flaw is soundness of the
+  # `Iterator`/`DoubleEndedIterator` impls for `glib::VariantStrIter`
+  # (`next`/`nth`/`last`/`next_back`/`nth_back` on glib >=0.15,<0.20;
+  # patched in >=0.20.0): an out-pointer passed as `&p` instead of
+  # `&mut p` through variadic `g_variant_get_child`, dereferenced via
+  # `CStr::from_ptr`. SecretsVault never calls `VariantStrIter` (no
+  # GVariant string-array iteration anywhere in the dashboard or core),
+  # so the buggy function is unreachable dead code in this binary; the
+  # unsound path cannot trigger without a caller. No reasonable upgrade
+  # exists: glib >=0.20 requires the gtk 0.20 line, which tauri 2.x does
+  # not support (cargo-deny reports "No safe upgrade is available!").
+  # Review when the Tauri major version changes or tauri supports a gtk
+  # line carrying glib >=0.20.
+  "RUSTSEC-2024-0429",
+]
+
+[licenses]
+version = 2
+allow = [
+  "MIT",
+  "Apache-2.0",
+  "Apache-2.0 WITH LLVM-exception",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "ISC",
+  "Unicode-3.0",
+  "Zlib",
+  "CDLA-Permissive-2.0",
+  # The webview's HTML/CSS parsing chain (`cssparser` + `cssparser-macros`).
+  # MPL-2.0 is OSI- and FSF-approved, is file-level (not project-level)
+  # copyleft, and we do not modify those files — so it imposes no obligation
+  # on this Apache-2.0 crate. Reached via `wry -> dom_query -> cssparser`.
+  "MPL-2.0",
+]
+
+[bans]
+multiple-versions = "warn"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
